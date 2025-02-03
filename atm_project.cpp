@@ -135,7 +135,7 @@ int main()
 
     int ch = 0;
     int MenuItem = 0;
-    bool exit = false;
+    bool exit = false, exitToMainMenu = false;
 
     ShowMainMenu();
 
@@ -157,10 +157,44 @@ int main()
         case 13:
             if (MenuItem == 0) // Log In
             {
-                if (LogIn()) ShowAccountMenu();
-                else system("cls");
+                if (LogIn()) { 
+                    ShowAccountMenu();
+                    gotoxy(0, MenuItem);
+                    ch = _getch();
+                    if (ch == 224)
+                        ch = _getch();
+                    while (!exitToMainMenu)
+                    {
+                        switch (ch)
+                        {
+                        case 27: exitToMainMenu = true; break;
+                        case 72: MenuItem--; break;
+                        case 80: MenuItem++; break;
+                        case 13:
+                            if (MenuItem == 0) // show account info
+                            {
+
+                            }
+                            else if (MenuItem == 1) // deposit
+                            {
+
+                            }
+                            else if (MenuItem == 2) // transfer
+                            {
+
+                            }
+                            else if (MenuItem == 3) // exit to main menu
+                            {
+                                exitToMainMenu = true;
+                            }
+                        }
+                    }
+                }
+                else {
+                    system("cls");
                     cout << "Invalid card number";
-                    Sleep(10);
+                    Sleep(3000);
+                }
             }
             else if (MenuItem == 1) // Create a card
             {
