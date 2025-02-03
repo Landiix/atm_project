@@ -23,20 +23,7 @@ public:
 
 };
 
-void Createjsonfile()
-{
-    ofstream card1("1111.json");
-    fstream card;
-    card.open("1111.json");
-    json card2;
-    card2["Name"] =
-        card2["Surname"] =
-        card2["Balance"] = 0;
-    //дописать 
-    
-}
-
-Card CreateCard(string name, string surname)
+Card CreateCard()
 {
     system("cls");
     string name, surname;
@@ -46,31 +33,60 @@ Card CreateCard(string name, string surname)
     cout << "Enter your surname" << endl;
     cin >> surname;
     cout << endl;
+    system("cls");
     Card card(name, surname);
-    
+
     fstream CardData;
     CardData.open("CardData.txt");
     //считать крайнюю строку и вписать в card.number
+    string LastNum;
+    while (true)
+    {
+        if (!CardData.eof())
+        {
+            getline(CardData, LastNum);
+        }
+        else
+            break;
+        
+    }
 
+    CardData.close();
+
+    card.nubmer = atoi(LastNum.c_str()) + 1;
+
+    string CardNumber = to_string(atoi(LastNum.c_str()) + 1);
+
+    ofstream CardData1;
+    CardData1.open("CardData.txt", ios_base::app);
+    CardData1 <<endl<< CardNumber;
+    CardData1.close();
 
     return card;
 }
 
-void EnterCardholderInfo()
+void Createjsonfile()
 {
+    Card cardd = CreateCard();
+    string FileName = to_string(cardd.nubmer) + ".json";
+    ofstream card1;
+    card1.open(FileName.c_str());
+
     
-    fstream CardData;
-    CardData.open("CardData.json");
-    //вписать в фаил номер карты которая только что сделалась
+    json card;
+    
+    card["name"] = cardd.name;
+    card["surname"] = cardd.surname;
+    card["balance"] = cardd.balance;
+    card["number"] = cardd.nubmer;
+
+    card1 << card << endl;
+    card1.close();
+
 }
 
-void LogIn()
-{
-    int CardNum;
-    cout << "Enter card number";
-    cin >> CardNum;
-    cout << endl;
-}
+
+
 
 void gotoxy(short x, short y)
 {
@@ -79,9 +95,29 @@ void gotoxy(short x, short y)
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), p);
 }
 
-void ShowCardMenu()
+bool LogIn()
 {
     system("cls");
+    string EnteredNumber;
+    cout << "enter your card number" << endl;
+    cin >> EnteredNumber;
+    string CardNumber = EnteredNumber + ".json";
+
+    ifstream card(CardNumber.c_str());
+    if (card.is_open())
+        return true;
+    else return false;
+   
+}
+
+void ShowAccountMenu()
+{
+    system("cls");
+    cout << " show account info" << endl;
+    cout << " deposit" << endl;
+    cout << " transfer" << endl;
+    cout << " back to main menu" << endl;
+
 }
 
 void ShowMainMenu()
@@ -91,7 +127,6 @@ void ShowMainMenu()
     cout << " Create a Card" << endl;
     cout << " Exit" << endl;
 }
-
 
 
 int main()
@@ -122,10 +157,14 @@ int main()
         case 13:
             if (MenuItem == 0) // Log In
             {
-
+                if (LogIn()) ShowAccountMenu();
+                else system("cls");
+                    cout << "Invalid card number";
+                    Sleep(10);
             }
             else if (MenuItem == 1) // Create a card
             {
+                Createjsonfile();
                 
             }
             else if (MenuItem == 2) // Exit
