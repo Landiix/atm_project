@@ -26,29 +26,42 @@ public:
 void Createjsonfile()
 {
     ofstream card1("1111.json");
-    json card1;
+    fstream card;
+    card.open("1111.json");
+    json card2;
+    card2["Name"] =
+        card2["Surname"] =
+        card2["Balance"] = 0;
+    //дописать 
     
 }
 
-void CreateCard(string name, string surname)
-{
-    Card card(name, surname);
-
-    card.nubmer = 1111;
-}
-
-void EnterCardholderInfo()
+Card CreateCard(string name, string surname)
 {
     system("cls");
     string name, surname;
     cout << "Enter your name" << endl;
     cin >> name;
-    cout<< endl;
+    cout << endl;
     cout << "Enter your surname" << endl;
     cin >> surname;
     cout << endl;
-    (*CreateCard) (name, surname);
+    Card card(name, surname);
     
+    fstream CardData;
+    CardData.open("CardData.txt");
+    //считать крайнюю строку и вписать в card.number
+
+
+    return card;
+}
+
+void EnterCardholderInfo()
+{
+    
+    fstream CardData;
+    CardData.open("CardData.json");
+    //вписать в фаил номер карты которая только что сделалась
 }
 
 void LogIn()
@@ -79,8 +92,12 @@ void ShowMainMenu()
     cout << " Exit" << endl;
 }
 
+
+
 int main()
 {
+    
+
     int ch = 0;
     int MenuItem = 0;
     bool exit = false;
@@ -109,7 +126,7 @@ int main()
             }
             else if (MenuItem == 1) // Create a card
             {
-                EnterCardholderInfo();
+                
             }
             else if (MenuItem == 2) // Exit
             {
