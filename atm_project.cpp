@@ -7,6 +7,9 @@
 using namespace std;
 using namespace nlohmann;
 
+
+string EnteredNumber;
+
 class Card
 {
 public:
@@ -38,7 +41,6 @@ Card CreateCard()
 
     fstream CardData;
     CardData.open("CardData.txt");
-    //считать крайнюю строку и вписать в card.number
     string LastNum;
     while (true)
     {
@@ -65,7 +67,7 @@ Card CreateCard()
     return card;
 }
 
-void Createjsonfile()
+int Createjsonfile()
 {
     Card cardd = CreateCard();
     string FileName = to_string(cardd.nubmer) + ".json";
@@ -83,10 +85,90 @@ void Createjsonfile()
     card1 << card << endl;
     card1.close();
 
+    return cardd.nubmer;
 }
 
+void Deposit()
+{
+    system("cls");
+    cout << "Enter banknotes (from 100 to 5000)" << endl;
+    int EnteredValue, OldValue;
+    cin >> EnteredValue;
+    Sleep(100);
+    cout << ". "; 
+    Sleep(100); 
+    cout << ". "; 
+    Sleep(100); 
+    cout << "." << endl;
+    
+    fstream f(EnteredNumber.c_str());
+    json Cardj = json::parse(f);
 
+    OldValue = Cardj["balance"];
 
+    Card card;
+    card.name = Cardj["name"];
+    card.nubmer = Cardj["number"];
+    card.surname = Cardj["surname"];
+    card.balance = Cardj["balance"];
+
+    
+
+    card.balance = OldValue + EnteredValue;
+
+    
+    remove(EnteredNumber.c_str());
+    
+    ofstream card1;
+    card1.open(EnteredNumber.c_str());
+
+    json CardNew;
+
+    CardNew["name"] = card.name;
+    CardNew["surname"] = card.surname;
+    CardNew["number"] = card.nubmer;
+    CardNew["balance"] = card.balance;
+
+    card1 << CardNew << endl;
+
+    card1.close();
+
+}
+
+void transfer()
+{
+    system("cls");
+
+    string TransferNumber;
+    int TransferValue, OldFromValue,OldToValue;
+    system("cls");
+    cout << "Enter number of card u want to transfer" << endl;
+    cin >> TransferNumber;
+    cout << "Enter value" << endl;
+    cin >> TransferValue;
+    TransferNumber = TransferNumber + ".json";
+    fstream f(TransferNumber.c_str());
+    json TransferToCard = json::parse(f);
+
+    fstream g(EnteredNumber.c_str());
+    json TransferFromCard = json::parse(g);
+
+    if (TransferFromCard["balance"] >= TransferValue)
+    {
+        OldFromValue = TransferFromCard["balance"];
+        TransferFromCard["balance"] = TransferFromCard["balance"] - TransferValue;
+        OldToValue = TransferToCard["balance"];
+        TransferToCard["balance"] = TransferToCard["balance"] + TransferValue;
+    }
+    else
+    {
+        cout << "Not enough balance";
+        Sleep(10000);
+    }
+    f.close();
+    g.close();
+
+}
 
 void gotoxy(short x, short y)
 {
@@ -98,16 +180,24 @@ void gotoxy(short x, short y)
 bool LogIn()
 {
     system("cls");
-    string EnteredNumber;
     cout << "enter your card number" << endl;
     cin >> EnteredNumber;
-    string CardNumber = EnteredNumber + ".json";
+    EnteredNumber = EnteredNumber + ".json";
 
-    ifstream card(CardNumber.c_str());
+    ifstream card(EnteredNumber.c_str());
     if (card.is_open())
         return true;
     else return false;
-   
+}
+
+void ShowAccountInfo()
+{
+    system("cls");
+    ifstream f(EnteredNumber.c_str());
+    json Card = json::parse(f);
+
+    cout << "Name: " << Card["name"] << endl << "Surname: " << Card["surname"] << endl << "Balance: " << Card["balance"] << endl << "Card Number: " << Card["number"] << endl;
+    f.close();
 }
 
 void ShowAccountMenu()
@@ -135,7 +225,7 @@ int main()
 
     int ch = 0;
     int MenuItem = 0;
-    bool exit = false, exitToMainMenu = false;
+    bool exit = false, exitToMainMenu = false, exitToAccMenu = false;
 
     ShowMainMenu();
 
@@ -159,12 +249,14 @@ int main()
             {
                 if (LogIn()) { 
                     ShowAccountMenu();
-                    gotoxy(0, MenuItem);
-                    ch = _getch();
-                    if (ch == 224)
-                        ch = _getch();
+
                     while (!exitToMainMenu)
                     {
+                        ShowAccountMenu();
+                        gotoxy(0, MenuItem);
+                        ch = _getch();
+                        if (ch == 224)
+                            ch = _getch();
                         switch (ch)
                         {
                         case 27: exitToMainMenu = true; break;
@@ -173,20 +265,39 @@ int main()
                         case 13:
                             if (MenuItem == 0) // show account info
                             {
-
+                                while(!exitToAccMenu)
+                                {
+                                    ch = _getch();
+                                    if (ch == 224)
+                                        ch = _getch(); 
+                                    ShowAccountInfo();
+                                    switch (ch)
+                                    {
+                                    case 27: exitToAccMenu = true; break;
+                                    }
+                                }
+                                exitToAccMenu = false;
                             }
                             else if (MenuItem == 1) // deposit
                             {
-
+                                Deposit();
                             }
                             else if (MenuItem == 2) // transfer
                             {
-
+                                transfer();
                             }
                             else if (MenuItem == 3) // exit to main menu
                             {
                                 exitToMainMenu = true;
                             }
+                        }
+                        if (MenuItem < 0)
+                        {
+                            MenuItem = 0;
+                        }
+                        if (MenuItem > 3)
+                        {
+                            MenuItem = 3;
                         }
                     }
                 }
@@ -198,7 +309,8 @@ int main()
             }
             else if (MenuItem == 1) // Create a card
             {
-                Createjsonfile();
+                cout<<"Your card number is: "<<Createjsonfile();
+                Sleep(5000);
                 
             }
             else if (MenuItem == 2) // Exit
