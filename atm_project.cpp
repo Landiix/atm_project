@@ -14,7 +14,7 @@ class Card
 {
 public:
     string name, surname;
-    int nubmer,balance = 0;
+    int nubmer, balance = 0;
 
     Card() {}
 
@@ -25,6 +25,9 @@ public:
     }
 
 };
+
+
+
 
 Card CreateCard()
 {
@@ -50,7 +53,7 @@ Card CreateCard()
         }
         else
             break;
-        
+
     }
 
     CardData.close();
@@ -61,7 +64,7 @@ Card CreateCard()
 
     ofstream CardData1;
     CardData1.open("CardData.txt", ios_base::app);
-    CardData1 <<endl<< CardNumber;
+    CardData1 << endl << CardNumber;
     CardData1.close();
 
     return card;
@@ -74,9 +77,9 @@ int Createjsonfile()
     ofstream card1;
     card1.open(FileName.c_str());
 
-    
+
     json card;
-    
+
     card["name"] = cardd.name;
     card["surname"] = cardd.surname;
     card["balance"] = cardd.balance;
@@ -88,23 +91,20 @@ int Createjsonfile()
     return cardd.nubmer;
 }
 
-void Deposit()
+void load()
 {
-    system("cls");
-    cout << "Enter banknotes (from 100 to 5000)" << endl;
-    int EnteredValue, OldValue;
-    cin >> EnteredValue;
     Sleep(100);
-    cout << ". "; 
-    Sleep(100); 
-    cout << ". "; 
-    Sleep(100); 
+    cout << ". ";
+    Sleep(100);
+    cout << ". ";
+    Sleep(100);
     cout << "." << endl;
-    
-    fstream f(EnteredNumber.c_str());
-    json Cardj = json::parse(f);
+}
 
-    OldValue = Cardj["balance"];
+Card TakejsonInfo(string filename)
+{
+    fstream f(filename.c_str());
+    json Cardj = json::parse(f);
 
     Card card;
     card.name = Cardj["name"];
@@ -112,13 +112,25 @@ void Deposit()
     card.surname = Cardj["surname"];
     card.balance = Cardj["balance"];
 
-    
+    f.close();
+    return card;
+}
 
-    card.balance = OldValue + EnteredValue;
+void Deposit()
+{
+    system("cls");
+    cout << "Enter banknotes (from 100 to 5000)" << endl;
+    int EnteredValue, OldValue;
+    cin >> EnteredValue;
+    load();
 
-    
+
+    Card card = TakejsonInfo(EnteredNumber);
+
+    card.balance += EnteredValue;
+
     remove(EnteredNumber.c_str());
-    
+
     ofstream card1;
     card1.open(EnteredNumber.c_str());
 
@@ -139,34 +151,82 @@ void transfer()
 {
     system("cls");
 
-    string TransferNumber;
-    int TransferValue, OldFromValue,OldToValue;
+    string TransferToNumber;
+    int TransferValue;
     system("cls");
     cout << "Enter number of card u want to transfer" << endl;
-    cin >> TransferNumber;
-    cout << "Enter value" << endl;
-    cin >> TransferValue;
-    TransferNumber = TransferNumber + ".json";
-    fstream f(TransferNumber.c_str());
-    json TransferToCard = json::parse(f);
+    cin >> TransferToNumber;
+    TransferToNumber = TransferToNumber + ".json";
 
-    fstream g(EnteredNumber.c_str());
-    json TransferFromCard = json::parse(g);
+    if (TransferToNumber == EnteredNumber)
+    {
+        cout << "Numbers of card are the same" << endl;
+        Sleep(1000);
+        load();
+    }
 
-    if (TransferFromCard["balance"] >= TransferValue)
-    {
-        OldFromValue = TransferFromCard["balance"];
-        TransferFromCard["balance"] = TransferFromCard["balance"] - TransferValue;
-        OldToValue = TransferToCard["balance"];
-        TransferToCard["balance"] = TransferToCard["balance"] + TransferValue;
+    else {
+
+        cout << "Enter value" << endl;
+        cin >> TransferValue;
+
+
+
+        Card cardto = TakejsonInfo(TransferToNumber);
+
+
+        Card cardfrom = TakejsonInfo(EnteredNumber);
+
+
+
+        if (cardfrom.balance > TransferValue)
+        {
+            cardfrom.balance -= TransferValue;
+            cardto.balance += TransferValue;
+
+
+            remove(EnteredNumber.c_str());
+
+            ofstream card2;
+            card2.open(EnteredNumber.c_str());
+
+            json CardNewfrom;
+
+            CardNewfrom["name"] = cardfrom.name;
+            CardNewfrom["surname"] = cardfrom.surname;
+            CardNewfrom["number"] = cardfrom.nubmer;
+            CardNewfrom["balance"] = cardfrom.balance;
+
+            card2 << CardNewfrom << endl;
+
+            card2.close();
+
+            remove(TransferToNumber.c_str());
+
+            ofstream card3;
+            card3.open(TransferToNumber.c_str());
+
+            json CardNewto;
+
+            CardNewto["name"] = cardto.name;
+            CardNewto["surname"] = cardto.surname;
+            CardNewto["number"] = cardto.nubmer;
+            CardNewto["balance"] = cardto.balance;
+
+            card3 << CardNewto << endl;
+
+            card3.close();
+        }
+        else
+        {
+            cout << "Not enough balance" << endl;
+            Sleep(1000);
+            load();
+        }
+
     }
-    else
-    {
-        cout << "Not enough balance";
-        Sleep(10000);
-    }
-    f.close();
-    g.close();
+
+
 
 }
 
@@ -221,7 +281,7 @@ void ShowMainMenu()
 
 int main()
 {
-    
+
 
     int ch = 0;
     int MenuItem = 0;
@@ -236,7 +296,7 @@ int main()
         gotoxy(0, MenuItem);
 
         ch = _getch();
-        if (ch == 224) 
+        if (ch == 224)
             ch = _getch();
 
         switch (ch)
@@ -247,7 +307,9 @@ int main()
         case 13:
             if (MenuItem == 0) // Log In
             {
-                if (LogIn()) { 
+
+                exitToMainMenu = false;
+                if (LogIn()) {
                     ShowAccountMenu();
 
                     while (!exitToMainMenu)
@@ -265,11 +327,12 @@ int main()
                         case 13:
                             if (MenuItem == 0) // show account info
                             {
-                                while(!exitToAccMenu)
+                                exitToAccMenu = false;
+                                while (!exitToAccMenu)
                                 {
                                     ch = _getch();
                                     if (ch == 224)
-                                        ch = _getch(); 
+                                        ch = _getch();
                                     ShowAccountInfo();
                                     switch (ch)
                                     {
@@ -309,9 +372,9 @@ int main()
             }
             else if (MenuItem == 1) // Create a card
             {
-                cout<<"Your card number is: "<<Createjsonfile();
+                cout << "Your card number is: " << Createjsonfile();
                 Sleep(5000);
-                
+
             }
             else if (MenuItem == 2) // Exit
             {
